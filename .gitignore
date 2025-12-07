@@ -5,6 +5,8 @@ Frontend/node_modules/
 resume-analyzer/node_modules/
 
 # Environment variables - NEVER push to GitHub
+*.env
+
 .env
 Backend/.env
 
