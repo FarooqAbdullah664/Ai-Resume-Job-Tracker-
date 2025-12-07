@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer - AI Analysis</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                    <rect width="40" height="40" rx="8" fill="url(#gradient)"/>
+                    <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#667eea"/>
+                            <stop offset="100%" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>ResumeAI</span>
+            </div>
+            <div class="nav-links">
+                <a href="resume.html" class="nav-link active">Resume Analyzer</a>
+                <a href="generator.html" class="nav-link">Resume Generator</a>
+                <a href="Jobs.html" class="nav-link">Job Tracker</a>
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="page-header">
+            <h1>AI Resume Analyzer</h1>
+            <p>Get instant feedback and improve your resume with AI-powered insights</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="upload-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Upload Your Resume</h3>
+                        <p>Paste your resume text below for AI analysis</p>
+                    </div>
+                    <div class="card-body">
+                        <form id="resumeForm">
+                            <div class="form-group">
+                                <label for="resumeText">Resume Content</label>
+                                <textarea 
+                                    id="resumeText" 
+                                    rows="15" 
+                                    placeholder="Paste your resume here...&#10;&#10;Example:&#10;John Doe&#10;Software Engineer&#10;&#10;Experience:&#10;- 5 years in web development&#10;- Expert in React, Node.js&#10;..."
+                                    required
+                                ></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary btn-large" id="analyzeBtn">
+                                <span id="analyzeBtnText">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                    Analyze Resume
+                                </span>
+                                <span id="analyzeBtnLoader" class="loader" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Analysis Results</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="score-cards">
+                            <div class="score-card">
+                                <div class="score-label">Resume Score</div>
+                                <div class="score-value" id="resumeScore">--</div>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="resumeScoreFill"></div>
+                                </div>
+                            </div>
+                            <div class="score-card">
+                                <div class="score-label">ATS Score</div>
+                                <div class="score-value" id="atsScore">--</div>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="atsScoreFill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="suggestions-box">
+                            <h4>💡 Improvement Suggestions</h4>
+                            <ul id="suggestionsList"></ul>
+                        </div>
+
+                        <div class="improved-text-box">
+                            <h4>✨ AI-Improved Version</h4>
+                            <div class="improved-content" id="improvedContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Analysis History</h3>
+                    <button class="btn-secondary" id="refreshHistoryBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="historyList" class="history-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/resume.js"></script>
+</body>
+</html>
