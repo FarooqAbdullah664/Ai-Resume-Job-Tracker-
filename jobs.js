@@ -6,6 +6,9 @@ if (!token) {
     window.location.href = 'index.html';
 }
 
+// Configure Axios defaults
+axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
 const logoutBtn = document.getElementById('logoutBtn');
 const addJobBtn = document.getElementById('addJobBtn');
 const jobModal = document.getElementById('jobModal');
@@ -59,7 +62,7 @@ jobModal.addEventListener('click', (e) => {
     }
 });
 
-// Submit job form
+// Submit job form with Axios
 jobForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -83,33 +86,12 @@ jobForm.addEventListener('submit', async (e) => {
             notes
         };
         
-        let response;
-        
         if (currentEditId) {
             // Update existing job
-            response = await fetch(`${API_URL}/jobs/${currentEditId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(jobData)
-            });
+            await axios.put(`${API_URL}/jobs/${currentEditId}`, jobData);
         } else {
             // Create new job
-            response = await fetch(`${API_URL}/jobs`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(jobData)
-            });
-        }
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to save job');
+            await axios.post(`${API_URL}/jobs`, jobData);
         }
         
         // Close modal and reload jobs
@@ -117,7 +99,8 @@ jobForm.addEventListener('submit', async (e) => {
         loadJobs();
         
     } catch (error) {
-        alert('Error: ' + error.message);
+        const errorMsg = error.response?.data?.message || error.message || 'Failed to save job';
+        alert('Error: ' + errorMsg);
         console.error(error);
     } finally {
         saveJobBtn.disabled = false;
@@ -126,30 +109,14 @@ jobForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Load all jobs
+// Load all jobs with Axios
 async function loadJobs() {
     try {
-        console.log('Loading jobs with token:', token ? 'Token exists' : 'No token');
+        console.log('Loading jobs...');
         
-        const response = await fetch(`${API_URL}/jobs`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await axios.get(`${API_URL}/jobs`);
         
-        console.log('Jobs response status:', response.status);
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert('Session expired. Please login again.');
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-                return;
-            }
-            throw new Error('Failed to load jobs');
-        }
-        
-        allJobs = await response.json();
+        allJobs = response.data;
         console.log('Jobs data:', allJobs);
         
         // Update stats
@@ -160,15 +127,21 @@ async function loadJobs() {
         
     } catch (error) {
         console.error('Error loading jobs:', error);
-        jobsTableBody.innerHTML = `
-            <tr class="empty-state">
-                <td colspan="6">
-                    <div class="empty-message">
-                        <p style="color: var(--danger);">Failed to load jobs. Please try again.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+        if (error.response?.status === 401) {
+            alert('Session expired. Please login again.');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        } else {
+            jobsTableBody.innerHTML = `
+                <tr class="empty-state">
+                    <td colspan="6">
+                        <div class="empty-message">
+                            <p style="color: var(--danger);">Failed to load jobs. Please try again.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
@@ -264,28 +237,18 @@ window.editJob = async (id) => {
     jobModal.classList.add('show');
 };
 
-// Delete job
+// Delete job with Axios
 window.deleteJob = async (id) => {
     if (!confirm('Are you sure you want to delete this job application?')) {
         return;
     }
     
     try {
-        const response = await fetch(`${API_URL}/jobs/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to delete job');
-        }
-        
+        await axios.delete(`${API_URL}/jobs/${id}`);
         loadJobs();
-        
     } catch (error) {
-        alert('Error: ' + error.message);
+        const errorMsg = error.response?.data?.message || error.message || 'Failed to delete job';
+        alert('Error: ' + errorMsg);
         console.error(error);
     }
 };

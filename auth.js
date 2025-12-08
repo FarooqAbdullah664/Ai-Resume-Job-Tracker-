@@ -45,7 +45,7 @@ toggleLink.addEventListener('click', (e) => {
     hideMessages();
 });
 
-// Form submission
+// Form submission with Axios
 authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -82,27 +82,16 @@ authForm.addEventListener('submit', async (e) => {
         console.log('🚀 Sending request to:', `${API_URL}${endpoint}`);
         console.log('📦 Request body:', body);
         
-        const response = await fetch(`${API_URL}${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
+        // Using Axios instead of fetch
+        const response = await axios.post(`${API_URL}${endpoint}`, body);
         
         console.log('📡 Response status:', response.status);
-        
-        const data = await response.json();
-        console.log('📥 Response data:', data);
-        
-        if (!response.ok) {
-            throw new Error(data.message || 'Something went wrong');
-        }
+        console.log('📥 Response data:', response.data);
         
         if (isLogin) {
             // Store token and redirect
-            localStorage.setItem('token', data.token);
-            console.log('✅ Token saved:', data.token);
+            localStorage.setItem('token', response.data.token);
+            console.log('✅ Token saved:', response.data.token);
             showSuccess('Login successful! Redirecting...');
             setTimeout(() => {
                 window.location.href = 'resume.html';
@@ -119,7 +108,8 @@ authForm.addEventListener('submit', async (e) => {
         
     } catch (error) {
         console.error('❌ Error:', error);
-        showError(error.message);
+        const errorMsg = error.response?.data?.message || error.message || 'Something went wrong';
+        showError(errorMsg);
     } finally {
         submitBtn.disabled = false;
         btnText.style.display = 'block';

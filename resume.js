@@ -6,6 +6,9 @@ if (!token) {
     window.location.href = 'index.html';
 }
 
+// Configure Axios defaults
+axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
 const resumeForm = document.getElementById('resumeForm');
 const resumeText = document.getElementById('resumeText');
 const analyzeBtn = document.getElementById('analyzeBtn');
@@ -28,7 +31,7 @@ logoutBtn.addEventListener('click', () => {
     window.location.href = 'index.html';
 });
 
-// Analyze resume
+// Analyze resume with Axios
 resumeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -45,24 +48,12 @@ resumeForm.addEventListener('submit', async (e) => {
     analyzeBtnLoader.style.display = 'block';
     
     try {
-        const response = await fetch(`${API_URL}/resume/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ resumeText: text })
+        const response = await axios.post(`${API_URL}/resume/analyze`, {
+            resumeText: text
         });
         
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Analysis failed');
-        }
-        
-        const data = await response.json();
-        
         // Display results
-        displayResults(data);
+        displayResults(response.data);
         
         // Refresh history
         loadHistory();
@@ -71,7 +62,8 @@ resumeForm.addEventListener('submit', async (e) => {
         resultsSection.scrollIntoView({ behavior: 'smooth' });
         
     } catch (error) {
-        alert('Error: ' + error.message);
+        const errorMsg = error.response?.data?.message || error.message || 'Analysis failed';
+        alert('Error: ' + errorMsg);
         console.error(error);
     } finally {
         analyzeBtn.disabled = false;
@@ -110,39 +102,22 @@ function displayResults(data) {
     improvedContent.textContent = data.aiImprovedText || 'No improved version available';
 }
 
-// Load history
+// Load history with Axios
 async function loadHistory() {
     try {
-        console.log('Loading history with token:', token ? 'Token exists' : 'No token');
+        console.log('Loading history...');
         
-        const response = await fetch(`${API_URL}/resume`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await axios.get(`${API_URL}/resume`);
         
-        console.log('History response status:', response.status);
+        console.log('History data:', response.data);
         
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert('Session expired. Please login again.');
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-                return;
-            }
-            throw new Error('Failed to load history');
-        }
-        
-        const history = await response.json();
-        console.log('History data:', history);
-        
-        if (history.length === 0) {
+        if (response.data.length === 0) {
             historyList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">No analysis history yet. Analyze your first resume!</p>';
             return;
         }
         
         historyList.innerHTML = '';
-        history.forEach(item => {
+        response.data.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             historyItem.innerHTML = `
@@ -170,7 +145,13 @@ async function loadHistory() {
         
     } catch (error) {
         console.error('Error loading history:', error);
-        historyList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 40px;">Failed to load history. Please try again.</p>';
+        if (error.response?.status === 401) {
+            alert('Session expired. Please login again.');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        } else {
+            historyList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 40px;">Failed to load history. Please try again.</p>';
+        }
     }
 }
 

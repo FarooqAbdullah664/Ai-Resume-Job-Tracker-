@@ -2,10 +2,15 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import resumeRoutes from './routes/resumeRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
 import resumeGeneratorRoutes from './routes/resumeGeneratorRoutes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
@@ -13,18 +18,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from parent directory (Frontend files)
+app.use(express.static(path.join(__dirname, '..')));
+
 // Logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
 
-app.get('/', (req, res) => res.send('Server is running'));
-
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/resume-generator', resumeGeneratorRoutes);
+
+// Serve index.html for root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
 
 // 404 handler
 app.use((req, res) => {
