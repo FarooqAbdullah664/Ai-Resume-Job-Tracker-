@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Job Matcher - AI Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                    <rect width="40" height="40" rx="8" fill="url(#gradient)"/>
+                    <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#667eea"/>
+                            <stop offset="100%" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>ResumeAI</span>
+            </div>
+            <div class="nav-links">
+                <a href="resume.html" class="nav-link">Resume Analyzer</a>
+                <a href="generator.html" class="nav-link">Resume Generator</a>
+                <a href="matcher.html" class="nav-link active">Job Matcher</a>
+                <a href="Jobs.html" class="nav-link">Job Tracker</a>
+                <button class="btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="page-header">
+            <div>
+                <h1>🎯 Resume Job Matcher</h1>
+                <p>Compare your resume against job descriptions and get AI-powered match analysis</p>
+            </div>
+        </div>
+
+        <div class="matcher-grid">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📄 Your Resume & Job Description</h3>
+                        <p>Paste both texts below for comprehensive match analysis</p>
+                    </div>
+                    <div class="card-body">
+                        <form id="matcherForm">
+                            <div class="form-group">
+                                <label for="resumeText">Your Resume *</label>
+                                <textarea 
+                                    id="resumeText" 
+                                    rows="8" 
+                                    placeholder="Paste your resume here...&#10;&#10;Include:&#10;- Contact information&#10;- Professional summary&#10;- Work experience&#10;- Skills&#10;- Education"
+                                    required
+                                ></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="jobDescription">Job Description *</label>
+                                <textarea 
+                                    id="jobDescription" 
+                                    rows="8" 
+                                    placeholder="Paste the job description here...&#10;&#10;Include:&#10;- Required skills&#10;- Experience requirements&#10;- Job responsibilities&#10;- Qualifications"
+                                    required
+                                ></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn-primary btn-large" id="matchBtn">
+                                <span id="matchBtnText">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 11H1l6-6v4a7.98 7.98 0 0 1 10 2M15 13h8l-6 6v-4a7.98 7.98 0 0 0-10-2"/>
+                                    </svg>
+                                    Analyze Match
+                                </span>
+                                <span id="matchBtnLoader" class="loader" style="display: none;"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <!-- Match Overview -->
+                <div class="card match-overview">
+                    <div class="card-header">
+                        <h3>📊 Match Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="match-scores">
+                            <div class="match-score-card primary">
+                                <div class="score-icon">🎯</div>
+                                <div class="score-content">
+                                    <div class="score-label">Match Score</div>
+                                    <div class="score-value" id="matchScore">--</div>
+                                    <div class="score-rating" id="matchRating">--</div>
+                                </div>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="matchScoreFill"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="match-score-card secondary">
+                                <div class="score-icon">🤖</div>
+                                <div class="score-content">
+                                    <div class="score-label">ATS Score</div>
+                                    <div class="score-value" id="atsScore">--</div>
+                                    <div class="score-rating">ATS Compatibility</div>
+                                </div>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="atsScoreFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Analysis -->
+                <div class="card skills-analysis">
+                    <div class="card-header">
+                        <h3>🔧 Skills Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="skills-grid">
+                            <div class="skills-section matched">
+                                <h4>✅ Matched Skills</h4>
+                                <div class="skills-list" id="matchedSkills"></div>
+                            </div>
+                            <div class="skills-section missing">
+                                <h4>❌ Missing Skills</h4>
+                                <div class="skills-list" id="missingSkills"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience & Education -->
+                <div class="card requirements-analysis">
+                    <div class="card-header">
+                        <h3>📋 Requirements Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="requirements-grid">
+                            <div class="requirement-item">
+                                <div class="requirement-header">
+                                    <span class="requirement-icon">💼</span>
+                                    <span class="requirement-title">Experience</span>
+                                    <span class="requirement-status" id="experienceStatus">--</span>
+                                </div>
+                                <div class="requirement-details">
+                                    <div class="requirement-row">
+                                        <span class="label">Required:</span>
+                                        <span id="experienceRequired">--</span>
+                                    </div>
+                                    <div class="requirement-row">
+                                        <span class="label">Your Profile:</span>
+                                        <span id="experienceCandidate">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="requirement-item">
+                                <div class="requirement-header">
+                                    <span class="requirement-icon">🎓</span>
+                                    <span class="requirement-title">Education</span>
+                                    <span class="requirement-status" id="educationStatus">--</span>
+                                </div>
+                                <div class="requirement-details">
+                                    <div class="requirement-row">
+                                        <span class="label">Required:</span>
+                                        <span id="educationRequired">--</span>
+                                    </div>
+                                    <div class="requirement-row">
+                                        <span class="label">Your Profile:</span>
+                                        <span id="educationCandidate">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strengths & Improvements -->
+                <div class="insights-grid">
+                    <div class="card strengths-card">
+                        <div class="card-header">
+                            <h3>💪 Key Strengths</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul id="keyStrengths" class="insights-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card improvements-card">
+                        <div class="card-header">
+                            <h3>🚀 Improvements</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul id="improvements" class="insights-list"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ATS Optimizations -->
+                <div class="card ats-optimizations">
+                    <div class="card-header">
+                        <h3>🤖 ATS Optimizations</h3>
+                        <p>Make your resume more ATS-friendly</p>
+                    </div>
+                    <div class="card-body">
+                        <ul id="atsOptimizations" class="insights-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Recommended Changes -->
+                <div class="card recommended-changes">
+                    <div class="card-header">
+                        <h3>📝 Recommended Changes</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="changes-grid">
+                            <div class="change-section">
+                                <h4>🏷️ Add Keywords</h4>
+                                <div class="keywords-list" id="addKeywords"></div>
+                            </div>
+                            <div class="change-section">
+                                <h4>⭐ Emphasize Skills</h4>
+                                <div class="keywords-list" id="emphasizeSkills"></div>
+                            </div>
+                            <div class="change-section">
+                                <h4>📄 Improve Sections</h4>
+                                <div class="sections-list" id="improveSections"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="matcher.js"></script>
+</body>
+</html>

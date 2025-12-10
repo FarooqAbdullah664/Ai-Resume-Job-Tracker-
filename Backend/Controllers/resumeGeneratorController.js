@@ -1,4 +1,5 @@
 import { generateResumeFromJD } from "../Utils/ResumeGenerator.js";
+import GeneratedResume from "../Models/GeneratedResume.js";
 
 export const generateResume = async (req, res) => {
   try {
@@ -35,15 +36,72 @@ export const analyzeJobAndGenerateResume = async (req, res) => {
     // Generate tailored resume
     const generatedResume = await generateResumeFromJD(jobDescription, userInfo);
 
+    const fileName = `Resume_${userInfo?.name?.replace(/\s+/g, '_') || 'Generated'}_${Date.now()}.txt`;
+
+    // Save to database if user is authenticated
+    let savedId = null;
+    if (req.user) {
+      const savedResume = await GeneratedResume.create({
+        userId: req.user.id,
+        jobDescription,
+        userInfo: userInfo || {},
+        analysis,
+        generatedResume,
+        fileName
+      });
+      savedId = savedResume._id;
+    }
+
     res.json({
       success: true,
       analysis: analysis,
       resume: generatedResume,
-      fileName: `Resume_${userInfo?.name?.replace(/\s+/g, '_') || 'Generated'}_${Date.now()}.txt`
+      fileName: fileName,
+      savedId: savedId
     });
   } catch (error) {
     console.error("Job Analysis Error:", error);
     res.status(500).json({ message: error.message || "Failed to analyze job and generate resume" });
+  }
+};
+
+// Get generated resume history
+export const getGeneratedResumeHistory = async (req, res) => {
+  try {
+    const resumes = await GeneratedResume.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .select('fileName analysis.matchScore createdAt jobDescription')
+      .limit(20);
+
+    // Add preview for job description
+    const resumeHistory = resumes.map(resume => ({
+      ...resume.toObject(),
+      jobPreview: resume.jobDescription.substring(0, 100) + '...'
+    }));
+
+    res.json(resumeHistory);
+  } catch (error) {
+    console.error("Get Generated Resume History Error:", error);
+    res.status(500).json({ message: "Failed to fetch generated resume history" });
+  }
+};
+
+// Get specific generated resume
+export const getGeneratedResume = async (req, res) => {
+  try {
+    const resume = await GeneratedResume.findOne({ 
+      _id: req.params.id, 
+      userId: req.user.id 
+    });
+
+    if (!resume) {
+      return res.status(404).json({ message: "Generated resume not found" });
+    }
+
+    res.json(resume);
+  } catch (error) {
+    console.error("Get Generated Resume Error:", error);
+    res.status(500).json({ message: "Failed to fetch generated resume" });
   }
 };
 

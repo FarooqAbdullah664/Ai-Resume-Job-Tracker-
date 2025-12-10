@@ -42,10 +42,14 @@ resumeForm.addEventListener('submit', async (e) => {
         return;
     }
     
-    // Show loading
+    // Show loading with enhanced animation
     analyzeBtn.disabled = true;
+    analyzeBtn.classList.add('loading');
     analyzeBtnText.style.display = 'none';
     analyzeBtnLoader.style.display = 'block';
+    
+    // Hide previous results
+    resultsSection.classList.remove('show');
     
     try {
         const response = await axios.post(`${API_URL}/resume/analyze`, {
@@ -67,39 +71,102 @@ resumeForm.addEventListener('submit', async (e) => {
         console.error(error);
     } finally {
         analyzeBtn.disabled = false;
+        analyzeBtn.classList.remove('loading');
         analyzeBtnText.style.display = 'flex';
         analyzeBtnLoader.style.display = 'none';
     }
 });
 
 function displayResults(data) {
-    // Show results section
+    // Show results section with animation
     resultsSection.style.display = 'block';
+    resultsSection.classList.add('show');
     
-    // Update scores
-    resumeScore.textContent = data.aiScore || 0;
-    atsScore.textContent = data.atsScore || 0;
+    // Add success animation to the card
+    const resultsCard = resultsSection.querySelector('.card');
+    resultsCard.classList.add('analysis-complete');
     
-    // Animate score bars
+    // Add success checkmark after a delay
     setTimeout(() => {
+        resultsCard.classList.add('analysis-success');
+    }, 1000);
+    
+    // Reset score displays first
+    resumeScore.textContent = '0';
+    atsScore.textContent = '0';
+    resumeScoreFill.style.width = '0%';
+    atsScoreFill.style.width = '0%';
+    
+    // Animate score counting
+    setTimeout(() => {
+        animateScore(resumeScore, data.aiScore || 0);
+        animateScore(atsScore, data.atsScore || 0);
+        
+        // Animate score bars
         resumeScoreFill.style.width = `${data.aiScore || 0}%`;
         atsScoreFill.style.width = `${data.atsScore || 0}%`;
-    }, 100);
+    }, 300);
     
-    // Display suggestions
+    // Display suggestions with staggered animation
     suggestionsList.innerHTML = '';
     if (data.suggestions && data.suggestions.length > 0) {
-        data.suggestions.forEach(suggestion => {
-            const li = document.createElement('li');
-            li.textContent = suggestion;
-            suggestionsList.appendChild(li);
+        data.suggestions.forEach((suggestion, index) => {
+            setTimeout(() => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                li.style.opacity = '0';
+                li.style.transform = 'translateX(-20px)';
+                suggestionsList.appendChild(li);
+                
+                // Animate in
+                setTimeout(() => {
+                    li.style.transition = 'all 0.3s ease';
+                    li.style.opacity = '1';
+                    li.style.transform = 'translateX(0)';
+                }, 50);
+            }, index * 100);
         });
     } else {
-        suggestionsList.innerHTML = '<li>No suggestions available</li>';
+        const li = document.createElement('li');
+        li.textContent = 'No suggestions available';
+        suggestionsList.appendChild(li);
     }
     
-    // Display improved text
-    improvedContent.textContent = data.aiImprovedText || 'No improved version available';
+    // Display improved text with typing effect
+    improvedContent.textContent = '';
+    const text = data.aiImprovedText || 'No improved version available';
+    typeWriter(improvedContent, text, 20);
+}
+
+// Score counting animation
+function animateScore(element, targetScore) {
+    let currentScore = 0;
+    const increment = targetScore / 30; // 30 steps
+    const timer = setInterval(() => {
+        currentScore += increment;
+        if (currentScore >= targetScore) {
+            currentScore = targetScore;
+            clearInterval(timer);
+        }
+        element.textContent = Math.round(currentScore);
+    }, 50);
+}
+
+// Typewriter effect for improved content
+function typeWriter(element, text, speed = 50) {
+    let i = 0;
+    element.textContent = '';
+    
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    
+    // Start typing after a short delay
+    setTimeout(type, 500);
 }
 
 // Load history with Axios

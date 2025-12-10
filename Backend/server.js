@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import resumeRoutes from './routes/resumeRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
 import resumeGeneratorRoutes from './routes/resumeGeneratorRoutes.js';
+import resumeMatchRoutes from './routes/resumeMatchRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/resume-generator', resumeGeneratorRoutes);
+app.use('/api/resume-match', resumeMatchRoutes);
 
 // Serve index.html for root route
 app.get('/', (req, res) => {
