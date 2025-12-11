@@ -8,7 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+    <nav class="navbar"></nav>
         <div class="nav-container">
             <div class="nav-brand">
                 <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
@@ -24,8 +30,10 @@
                 <span>ResumeAI</span>
             </div>
             <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
                 <a href="resume.html" class="nav-link">Resume Analyzer</a>
                 <a href="generator.html" class="nav-link">Resume Generator</a>
+                <a href="cv-builder.html" class="nav-link">CV Builder</a>
                 <a href="matcher.html" class="nav-link active">Job Matcher</a>
                 <a href="Jobs.html" class="nav-link">Job Tracker</a>
                 <button class="btn-logout" id="logoutBtn">Logout</button>
@@ -34,10 +42,35 @@
     </nav>
 
     <div class="main-container">
-        <div class="page-header">
-            <div>
-                <h1>🎯 Resume Job Matcher</h1>
-                <p>Compare your resume against job descriptions and get AI-powered match analysis</p>
+        <div class="page-header enhanced">
+            <div class="header-content">
+                <div class="header-icon matcher">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11H1l6-6v4a7.98 7.98 0 0 1 10 2M15 13h8l-6 6v-4a7.98 7.98 0 0 0-10-2"/>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h1>Resume Job Matcher</h1>
+                    <p>Compare your resume against job descriptions and get AI-powered match analysis</p>
+                    <div class="header-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalMatches">0</span>
+                            <span class="stat-label">Matches Done</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="bestMatch">0%</span>
+                            <span class="stat-label">Best Match</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="window.location.href='dashboard.html'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    </svg>
+                    Dashboard
+                </button>
             </div>
         </div>
 
@@ -53,6 +86,16 @@
                         <form id="matcherForm">
                             <div class="form-group">
                                 <label for="resumeText">Your Resume *</label>
+                                <div class="resume-input-options">
+                                    <button type="button" class="btn-secondary btn-small" id="loadCvBtn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14,2 14,8 20,8"/>
+                                        </svg>
+                                        Load My CV
+                                    </button>
+                                    <span class="input-separator">or</span>
+                                </div>
                                 <textarea 
                                     id="resumeText" 
                                     rows="8" 
@@ -71,14 +114,14 @@
                                 ></textarea>
                             </div>
                             
-                            <button type="submit" class="btn-primary btn-large" id="matchBtn">
+                            <button type="submit" class="btn-primary btn-large glow ripple magnetic" id="matchBtn"></button>
                                 <span id="matchBtnText">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M9 11H1l6-6v4a7.98 7.98 0 0 1 10 2M15 13h8l-6 6v-4a7.98 7.98 0 0 0-10-2"/>
                                     </svg>
                                     Analyze Match
                                 </span>
-                                <span id="matchBtnLoader" class="loader" style="display: none;"></span>
+                                <span id="matchBtnLoader" class="liquid-loader" style="display: none;"></span>
                             </button>
                         </form>
                     </div>

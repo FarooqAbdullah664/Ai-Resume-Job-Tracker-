@@ -32,6 +32,7 @@ let currentResumeText = '';
 // Logout
 logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
     window.location.href = 'index.html';
 });
 
@@ -229,4 +230,12 @@ downloadBtn.addEventListener('click', () => {
         console.error('Download error:', error);
         alert('Failed to download resume. Please try copying the text instead.');
     }
+});
+// Scroll Progress Indicator
+window.addEventListener('scroll', () => {
+    const scrollProgress = document.getElementById('scrollProgress');
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercentage = (scrollTop / scrollHeight) * 100;
+    scrollProgress.style.width = scrollPercentage + '%';
 });

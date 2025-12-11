@@ -28,6 +28,7 @@ const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
 // Logout
 logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
     window.location.href = 'index.html';
 });
 
@@ -227,3 +228,19 @@ refreshHistoryBtn.addEventListener('click', loadHistory);
 
 // Load history on page load
 loadHistory();
+// Scroll Progress Indicator
+window.addEventListener('scroll', () => {
+    const scrollProgress = document.getElementById('scrollProgress');
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercentage = (scrollTop / scrollHeight) * 100;
+    scrollProgress.style.width = scrollPercentage + '%';
+});
+
+// Add success particles effect
+function addSuccessParticles(element) {
+    element.classList.add('success-particles');
+    setTimeout(() => {
+        element.classList.remove('success-particles');
+    }, 1000);
+}

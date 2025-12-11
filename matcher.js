@@ -42,8 +42,95 @@ const improveSections = document.getElementById('improveSections');
 // Logout
 logoutBtn.addEventListener('click', () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
     window.location.href = 'index.html';
 });
+
+// Load CV functionality
+const loadCvBtn = document.getElementById('loadCvBtn');
+loadCvBtn.addEventListener('click', loadUserCV);
+
+async function loadUserCV() {
+    try {
+        loadCvBtn.disabled = true;
+        loadCvBtn.innerHTML = '<span class="loader" style="width: 14px; height: 14px;"></span> Loading...';
+        
+        const response = await axios.get(`${API_URL}/cv/active`);
+        
+        if (response.data) {
+            const cv = response.data;
+            const resumeText = convertCVToText(cv);
+            document.getElementById('resumeText').value = resumeText;
+            
+            // Show success feedback
+            loadCvBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Loaded!';
+            loadCvBtn.style.background = 'var(--success)';
+            loadCvBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                loadCvBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg> Load My CV';
+                loadCvBtn.style.background = 'white';
+                loadCvBtn.style.color = 'var(--primary)';
+                loadCvBtn.disabled = false;
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('Load CV Error:', error);
+        
+        if (error.response?.status === 404) {
+            alert('No saved CV found. Please create a CV first using the CV Builder.');
+        } else {
+            alert('Failed to load CV. Please try again.');
+        }
+        
+        loadCvBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg> Load My CV';
+        loadCvBtn.disabled = false;
+    }
+}
+
+function convertCVToText(cv) {
+    const { personalInfo, skills, experience, education } = cv;
+    
+    let resumeText = `${personalInfo.fullName}\n`;
+    resumeText += `${personalInfo.email} | ${personalInfo.phone}`;
+    
+    if (personalInfo.location) {
+        resumeText += ` | ${personalInfo.location}`;
+    }
+    if (personalInfo.linkedin) {
+        resumeText += ` | ${personalInfo.linkedin}`;
+    }
+    
+    resumeText += `\n\nPROFESSIONAL SUMMARY\n${personalInfo.summary}\n\n`;
+    
+    if (skills && skills.length > 0) {
+        resumeText += `TECHNICAL SKILLS\n${skills.join(', ')}\n\n`;
+    }
+    
+    if (experience && experience.length > 0) {
+        resumeText += `PROFESSIONAL EXPERIENCE\n\n`;
+        experience.forEach(exp => {
+            resumeText += `${exp.title} | ${exp.company}\n`;
+            resumeText += `${exp.startDate} - ${exp.endDate || 'Present'}\n`;
+            resumeText += `${exp.description}\n\n`;
+        });
+    }
+    
+    if (education && education.length > 0) {
+        resumeText += `EDUCATION\n\n`;
+        education.forEach(edu => {
+            resumeText += `${edu.degree}\n`;
+            resumeText += `${edu.institution} | ${edu.year}`;
+            if (edu.gpa) {
+                resumeText += ` | GPA: ${edu.gpa}`;
+            }
+            resumeText += `\n\n`;
+        });
+    }
+    
+    return resumeText.trim();
+}
 
 // Match resume with job
 matcherForm.addEventListener('submit', async (e) => {
@@ -68,9 +155,12 @@ matcherForm.addEventListener('submit', async (e) => {
     resultsSection.style.display = 'none';
     
     try {
+        // Add timeout to frontend request
         const response = await axios.post(`${API_URL}/resume-match/match`, {
             resumeText: resume,
             jobDescription: job
+        }, {
+            timeout: 30000 // 30 seconds timeout
         });
         
         // Display results
@@ -287,3 +377,12 @@ function displaySections(container, sections) {
         }, index * 120);
     });
 }
+
+// Scroll Progress Indicator
+window.addEventListener('scroll', () => {
+    const scrollProgress = document.getElementById('scrollProgress');
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercentage = (scrollTop / scrollHeight) * 100;
+    scrollProgress.style.width = scrollPercentage + '%';
+});

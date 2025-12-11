@@ -89,17 +89,30 @@ authForm.addEventListener('submit', async (e) => {
         console.log('📥 Response data:', response.data);
         
         if (isLogin) {
-            // Store token and redirect
+            // Store token and user name
             localStorage.setItem('token', response.data.token);
+            
+            // Store user name with proper validation
+            const userName = response.data.name || 'Developer';
+            localStorage.setItem('userName', userName);
+            
             console.log('✅ Token saved:', response.data.token);
+            console.log('✅ User name saved:', userName);
+            
             showSuccess('Login successful! Redirecting...');
             setTimeout(() => {
-                window.location.href = 'resume.html';
+                window.location.href = 'dashboard.html';
             }, 1000);
         } else {
             // Show success and switch to login
             showSuccess('Account created! Please sign in.');
             console.log('✅ User registered successfully');
+            
+            // Store the name for future use (from form input)
+            const userName = name || 'Developer';
+            localStorage.setItem('userName', userName);
+            console.log('✅ Registration name saved:', userName);
+            
             setTimeout(() => {
                 toggleLink.click();
                 authForm.reset();

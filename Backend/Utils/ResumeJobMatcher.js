@@ -58,7 +58,7 @@ ${resumeText}`;
       },
       {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 15000
+        timeout: 10000 // Reduced to 10 seconds
       }
     );
 

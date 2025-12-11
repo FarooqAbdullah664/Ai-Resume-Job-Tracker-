@@ -9,6 +9,7 @@ import resumeRoutes from './routes/resumeRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
 import resumeGeneratorRoutes from './routes/resumeGeneratorRoutes.js';
 import resumeMatchRoutes from './routes/resumeMatchRoutes.js';
+import cvRoutes from './routes/cvRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ app.use('/api/resume', resumeRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/resume-generator', resumeGeneratorRoutes);
 app.use('/api/resume-match', resumeMatchRoutes);
+app.use('/api/cv', cvRoutes);
 
 // Serve index.html for root route
 app.get('/', (req, res) => {
@@ -52,7 +54,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message || 'Internal server error' });
 });
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+  socketTimeoutMS: 45000, // 45 seconds socket timeout
+  bufferMaxEntries: 0,
+  maxPoolSize: 10
+})
   .then(() => console.log('✅ MongoDB Connected Successfully'))
   .catch(err => {
     console.error('❌ MongoDB Connection Error:', err.message);
